@@ -71,8 +71,9 @@ struct NavLinkDestination : View
     }
 }
 
-struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
-    @Environment(\.navLinkId) var id: NavLinkId
+/// Analogoues to the `NavigationLink` control for use with `NavView`.
+public struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
+    @Environment(\.navLinkId) public var id: NavLinkId
     @Environment(\.navLinkState) var navLinkState
     
     var splitViewController: UISplitViewController? {
@@ -101,7 +102,7 @@ struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
         var desiredNavState: NavigationState? = nil
     }
     
-    init<Destination: View>(
+    public init<Destination: View>(
         @ViewBuilder destination: @escaping () -> Destination,
         @ViewBuilder label: @escaping () -> Label)
     {
@@ -109,7 +110,7 @@ struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
         self.labelProducer = label
     }
     
-    init<Destination: View>(_ label: String, @ViewBuilder destination: @escaping () -> Destination) where Label == Text {
+    public init<Destination: View>(_ label: String, @ViewBuilder destination: @escaping () -> Destination) where Label == Text {
         self.init(destination: destination) {
             Text(label)
         }
@@ -117,7 +118,7 @@ struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
         self.labelText = label
     }
     
-    var body: some View {
+    public var body: some View {
         let innerBody = self.body_notListening.environment(\.navLinkSelected, isSelected)
         
         let selectionPublisher: Published<NavLinkId?>.Publisher?

@@ -73,11 +73,11 @@ extension EnvironmentValues {
 
 extension View {
 
-    func buttonStyle<T>(_ style: T, for column: UISplitViewController.Column) -> some View where T: ButtonStyle {
+    public func buttonStyle<T>(_ style: T, for column: UISplitViewController.Column) -> some View where T: ButtonStyle {
         return self.buttonStyle(_ButtonStyleToNavLinkButtonStyle(style), for: column)
     }
     
-    func buttonStyle<T>(_ style: T, for column: UISplitViewController.Column) -> some View where T: NavLinkButtonStyle {
+    public func buttonStyle<T>(_ style: T, for column: UISplitViewController.Column) -> some View where T: NavLinkButtonStyle {
         switch(column) {
         case .primary:
             return self.environment(\.primaryButtonStyle, AnyNavLinkButtonStyle(style))

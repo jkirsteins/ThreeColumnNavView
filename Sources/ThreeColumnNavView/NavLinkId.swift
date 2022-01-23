@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum NavLinkId : Hashable, Equatable
+public enum NavLinkId : Hashable, Equatable
 {
     case none
     case uuid(_ : UUID)
@@ -14,7 +14,6 @@ private struct NavLinkIdKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    
     var navLinkId: NavLinkId {
         get {
             self[NavLinkIdKey.self]
@@ -23,11 +22,10 @@ extension EnvironmentValues {
             self[NavLinkIdKey.self] = newValue
         }
     }
-    
 }
 
 extension View {
-  func id(_ navLinkId: NavLinkId) -> some View {
+  public func id(_ navLinkId: NavLinkId) -> some View {
     environment(\.navLinkId, navLinkId)
   }
 }

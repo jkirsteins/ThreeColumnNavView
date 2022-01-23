@@ -47,7 +47,7 @@ extension Color {
 public struct NavView<Content: View> : View {
     let root: NavView_Internal<Content>
     
-    init(@ViewBuilder sidebar: () -> Content) {
+    public init(@ViewBuilder sidebar: () -> Content) {
         self.root = NavView_Internal(sidebar: sidebar())
     }
     

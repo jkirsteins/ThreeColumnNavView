@@ -80,17 +80,10 @@ struct NavLinkStyleList: NavLinkButtonStyle{
     
 }
 
-protocol NavLinkButtonStyle {
+public protocol NavLinkButtonStyle {
     associatedtype Body: View
     func makeBody(configuration: ButtonStyleConfiguration, selected: Bool) -> Body
 }
-
-//extension NavLinkButtonStyle {
-//    public func makeBody(configuration: ButtonStyleConfiguration) -> some View
-//    {
-//        return self.makeBody(configuration: configuration, selected: false)
-//    }
-//}
 
 public struct NavLinkStyleSidebar: NavLinkButtonStyle {
     public func makeBody(configuration: ButtonStyleConfiguration) -> some View {
@@ -138,27 +131,4 @@ public struct NavLinkStyleSidebar: NavLinkButtonStyle {
 
     }
     
-}
-
-
-struct NeutralButtonStyle_Previews: PreviewProvider
-{
-    static var previews: some View
-    {
-        List {
-            Button(action: {
-                //Nothing
-            }) {
-                Text("Test label")
-            }
-            
-            NavLink("Hello World 2") {
-                Text("Hello Bim!")
-            }
-            
-            NavLink("Hello World") {
-                Text("Hello Bim!")
-            }
-        }.listStyle(.sidebar)
-    }
 }
