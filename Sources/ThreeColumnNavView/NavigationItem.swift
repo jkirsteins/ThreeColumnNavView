@@ -1,13 +1,15 @@
 import SwiftUI
 
-enum NavigationItemTitle : Equatable, Hashable {
+/// Navigation item title can consist of a string or an SF symbol.
+public enum NavigationItemTitle : Equatable, Hashable {
     case string(_ value: String)
     case symbol(_ name: String, title: String)
 }
 
-enum NavigationItem : Equatable, Hashable
+/// Items that go in the navigation bar.
+public enum NavigationItem : Equatable, Hashable
 {
-    static func == (lhs: NavigationItem, rhs: NavigationItem) -> Bool {
+    public static func == (lhs: NavigationItem, rhs: NavigationItem) -> Bool {
         switch(lhs, rhs) {
         case (.textButton(let lt, _), .textButton(let rt, _)):
             return lt == rt
@@ -26,7 +28,7 @@ enum NavigationItem : Equatable, Hashable
         }
     }
     
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         switch self {
         case .textButton(let title, _):
             hasher.combine(1)
@@ -56,7 +58,6 @@ enum NavigationItem : Equatable, Hashable
     case circleMenu(_ title: String, items: [UIAction])
     
     static func editButton(_ mode: Binding<EditMode>) -> NavigationItem {
-        print("RECREATING EDIT BUTTON", mode.wrappedValue.isEditing)
         return .editButton(mode, initial: mode.wrappedValue.isEditing)
     }
     

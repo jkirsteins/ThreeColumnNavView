@@ -182,7 +182,6 @@ struct NavLink<Label> : NavLayer, View, Identifiable where Label : View {
     func tappedSidebar() {
         
         guard let provider = self.navLinkState.provider else {
-            print("No coordinator available.")
             return
         }
         

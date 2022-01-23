@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct NavigationState : Equatable {
+public struct NavigationState : Equatable {
     internal init(title: String? = nil, items: [NavigationItem]? = nil) {
         self.title = title
         self.items = items
@@ -32,7 +32,8 @@ struct NavigationStatePreferenceKey: PreferenceKey {
     }
 }
 
-@resultBuilder struct NavigationStateBuilder {
+/// Allows initializing navigation state by passing in multiple instances of `NavigationItem`.
+@resultBuilder public struct NavigationStateBuilder {
     static func buildBlock(_ title: String, _ items: NavigationItem...) -> NavigationState {
         return NavigationState(title: title, items: items)
     }
@@ -56,7 +57,7 @@ extension View {
             + recursiveViewToViewList(viewGroup: viewGroup.value.1)
     }
     
-    func navigationState(title: String, @NavigationStateBuilder _ buildState: @escaping ()->NavigationState) -> some View {
+    public func navigationState(title: String, @NavigationStateBuilder _ buildState: @escaping ()->NavigationState) -> some View {
         var state = buildState()
         state.title = title
         return self

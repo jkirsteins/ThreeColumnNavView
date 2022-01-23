@@ -42,14 +42,16 @@ extension Color {
     }
 }
 
-struct NavView<Content: View> : View {
+/// The root navigation view. Analogous to the SwiftUI `NavigationView` control,
+/// except this will always have three columns.
+public struct NavView<Content: View> : View {
     let root: NavView_Internal<Content>
     
     init(@ViewBuilder sidebar: () -> Content) {
         self.root = NavView_Internal(sidebar: sidebar())
     }
     
-    var body: some View {
+    public var body: some View {
         self.root.edgesIgnoringSafeArea(.all)
     }
 }
@@ -91,8 +93,6 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
         
         func pop() {
             _ = navLayers.popLast()
-            
-            print("Popped. Current layers: \(navLayers.count)")
         }
         
         var navLayers: [NavLayer] = []
@@ -102,12 +102,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
             from state: NavLinkState,
             to dst: NavLinkState)
         {
-            defer {
-                print("Pushed. Current layers: \(navLayers.count)")
-            }
-            
             guard let svc = splitViewController else {
-                print("ERROR: no splitview controller. activate() doing nothing.")
                 return
             }
             
