@@ -37,12 +37,6 @@ protocol NavLayer
     var destination: NavLinkDestination { get }
 }
 
-//@resultBuilder struct NavLinkDestinationBuilder {
-//    static func buildBlock(_ items: NavigationItem...) -> NavigationState {
-//        return NavigationState(title: nil, items: items)
-//    }
-//}
-
 fileprivate struct InvalidationKey : EnvironmentKey {
     static let defaultValue = UUID()
 }

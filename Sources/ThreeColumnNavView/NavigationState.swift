@@ -34,15 +34,15 @@ struct NavigationStatePreferenceKey: PreferenceKey {
 
 /// Allows initializing navigation state by passing in multiple instances of `NavigationItem`.
 @resultBuilder public struct NavigationStateBuilder {
-    static func buildBlock(_ title: String, _ items: NavigationItem...) -> NavigationState {
+    public static func buildBlock(_ title: String, _ items: NavigationItem...) -> NavigationState {
         return NavigationState(title: title, items: items)
     }
     
-    static func buildBlock(_ items: NavigationItem...) -> NavigationState {
+    public static func buildBlock(_ items: NavigationItem...) -> NavigationState {
         return NavigationState(title: nil, items: items)
     }
     
-    static func buildExpression(_ expression: NavigationItem) -> NavigationItem {
+    public static func buildExpression(_ expression: NavigationItem) -> NavigationItem {
         return expression
     }
 }
@@ -57,9 +57,17 @@ extension View {
             + recursiveViewToViewList(viewGroup: viewGroup.value.1)
     }
     
+    /// Initialize navigation bar title and the navigation bar controls.
     public func navigationState(title: String, @NavigationStateBuilder _ buildState: @escaping ()->NavigationState) -> some View {
         var state = buildState()
         state.title = title
+        return self
+            .preference(key: NavigationStatePreferenceKey.self, value: state)
+    }
+    
+    /// Initialize a navigation bar with a title but no controls.
+    public func navigationState(title: String) -> some View {
+        let state = NavigationState(title: title, items: nil)
         return self
             .preference(key: NavigationStatePreferenceKey.self, value: state)
     }
