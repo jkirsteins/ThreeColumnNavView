@@ -61,6 +61,10 @@ public enum NavigationItem : Equatable, Hashable
         return .editButton(mode, initial: mode.wrappedValue.isEditing)
     }
     
+    static func circleMenu(items: [UIAction]) -> NavigationItem {
+        return .circleMenu("", items: items)
+    }
+    
     var requestsBackHidden: Bool {
         switch(self) {
         case .navigationActionReplacingBackIfCompact(_, let mode, _):
