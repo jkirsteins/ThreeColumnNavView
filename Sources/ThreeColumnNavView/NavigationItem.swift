@@ -57,11 +57,11 @@ public enum NavigationItem : Equatable, Hashable
     case navigationActionReplacingBackIfCompact(_ title: NavigationItemTitle, mode: Binding<EditMode>, action: ()->())
     case circleMenu(_ title: String, items: [UIAction])
     
-    static func editButton(_ mode: Binding<EditMode>) -> NavigationItem {
+    public static func editButton(_ mode: Binding<EditMode>) -> NavigationItem {
         return .editButton(mode, initial: mode.wrappedValue.isEditing)
     }
     
-    static func circleMenu(items: [UIAction]) -> NavigationItem {
+    public static func circleMenu(items: [UIAction]) -> NavigationItem {
         return .circleMenu("", items: items)
     }
     
