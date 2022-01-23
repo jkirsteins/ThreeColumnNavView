@@ -55,7 +55,10 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
     /// This can be invoked twice (once for compact view, and once for primary)
     func handleRootViewChange() {
         // This triggers SwiftUI initialization enough that we get the preference
-        self.view.snapshotView(afterScreenUpdates: true)
+        
+        print("Not snapshotting 2")
+        self.view.drawHierarchy(in: CGRect.zero, afterScreenUpdates: true)
+//        self.view.snapshotView(afterScreenUpdates: true)
     }
     
     override func viewWillAppear(_ animated: Bool) {
