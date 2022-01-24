@@ -1,12 +1,13 @@
 import SwiftUI
 
-class NavUISplitViewController<Content: View> : UISplitViewController
+class NavUISplitViewController<Content: View> : UISplitViewController, UISplitViewControllerDelegate
 {
     let swiftUiView: NavView_Internal<Content>
     
     init(style: UISplitViewController.Style, view: NavView_Internal<Content>) {
         self.swiftUiView = view
         super.init(style: style)
+        self.delegate = self
     }
     
     required init?(coder: NSCoder) {
