@@ -12,10 +12,6 @@ struct NavLinkStateModifier : ViewModifier {
     func body(content: Content) -> some View
     {
         let res = content
-            .onPreferenceChange(NavigationStatePreferenceKey.self) {
-                (state: NavigationState?) in
-                self.vc?.navigationItem.title = state?.title
-            }
             .transformEnvironment(\.navLinkState) { instate in
                 instate.selected = self.state.selected
                 instate.mode = self.state.mode
@@ -61,13 +57,43 @@ struct NavStateWrapperView<Content: View> : View {
     @Binding var navState: NavigationState?
     
     var body: some View {
-        wrapped.onPreferenceChange(NavigationStatePreferenceKey.self) {
-            self.navState = $0
+        wrapped.onPreferenceChange(NavigationStatePreferenceKey.self, perform: {
+            newState in
+            self.navState = newState
+        })
+    }
+}
+
+class InternalUINavigationController : UINavigationController, UINavigationControllerDelegate
+{
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.delegate = self
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+    }
+}
+
+fileprivate struct NavStateBindingKey : EnvironmentKey {
+    static let defaultValue: Binding<NavigationState?>? = nil
+}
+
+extension EnvironmentValues {
+    public var navStateBinding: Binding<NavigationState?>? {
+        get {
+            self[NavStateBindingKey.self]
+        }
+        set {
+            self[NavStateBindingKey.self] = newValue
         }
     }
 }
 
 struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
+    
+    typealias NavigationVCImpl = InternalUINavigationController
     
     let sidebar: Content
     
@@ -106,13 +132,14 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                 return
             }
             
+            let targetView = sender.destination.modifier(NavLinkStateModifier(dst))
             let vc: DestinationContentType = NavigationStateHostingViewController(
-                rootView: sender.destination.modifier(NavLinkStateModifier(dst)),
+                rootView: targetView,
                 coordinator: self)
             
             let targetVc: UIViewController
             if case .set(.secondary) = state.mode {
-                targetVc = UINavigationController(rootViewController: vc)
+                targetVc = NavigationVCImpl(rootViewController: vc)
             } else {
                 targetVc = vc
             }
@@ -142,15 +169,22 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                     let x = UIViewController()
                     x.view = UIView()
                     x.view.backgroundColor = UIColor.white
-                    svc.setViewController(UINavigationController(rootViewController: x), for: .secondary)
+                    svc.setViewController(NavigationVCImpl(rootViewController: x), for: .secondary)
                 }
                 svc.setViewController(targetVc, for: column)
             case .push(let column):
                 self.navLayers.append(sender)
                 let candidate = svc.viewController(for: column)
-                guard let nc = candidate as? UINavigationController else {
+                guard let nc = candidate as? NavigationVCImpl else {
                     fatalError("Invalid UIViewController for \(String(describing: column.rawValue)) (expected UINavigationController but got \(String(describing: candidate)))")
                 }
+                
+                /* Hack to force the navstate to update before
+                 we start the transition.
+                 
+                 Otherwise the title/navbar controls will flicker on after
+                 the push animation is completed.*/
+                targetVc.view.snapshotView(afterScreenUpdates: true)
                 
                 nc.pushViewController(targetVc, animated: true)
             }
@@ -198,7 +232,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
             coordinator: context.coordinator)
         primaryModifier.vc = list
                 
-        let listNc = UINavigationController(
+        let listNc = NavigationVCImpl(
             rootViewController: list)
         result.setViewController(listNc, for: .primary)
                 
@@ -208,7 +242,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
             coordinator: context.coordinator)
         
         // If we don't wrap this in NC, then we will have nothing to "push" child VC with
-        let compactListNc = UINavigationController(
+        let compactListNc = NavigationVCImpl(
             rootViewController: compactList)
         result.setViewController(compactListNc, for: .compact)
         
@@ -225,7 +259,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
             // no NC wrapper
             sidebarHost.wrappedRootView = self.sidebar.modifier(
                 NavLinkStateModifier(NavLinkState(provider: context.coordinator, mode: .set(.supplementary))))
-        } else if let sidebarNc = uiViewController.viewController(for: .primary) as? UINavigationController,
+        } else if let sidebarNc = uiViewController.viewController(for: .primary) as? NavigationVCImpl,
                   let sidebarHost = sidebarNc.viewControllers.first as? SidebarContentType {
             
             sidebarHost.wrappedRootView = self.sidebar.modifier(
@@ -234,7 +268,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
             fatalError("Can't update")
         }
     
-        if let compactNc = uiViewController.viewController(for: .compact) as? UINavigationController {
+        if let compactNc = uiViewController.viewController(for: .compact) as? NavigationVCImpl {
             
             // Child views should take care of updating themselves, if we don't change at the root
             

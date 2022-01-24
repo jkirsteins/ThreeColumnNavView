@@ -25,16 +25,18 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
             get: { self.currentState },
             set: {
                 self.currentState = $0
+                
+                self.isDirty = true
             }
         )
         
         self.wrappedRootView = rootView
-        
-        handleRootViewChange()
         self.coordinator = coordinator
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
         if self.isMovingFromParent {
             coordinator?.pop()
         }
@@ -52,22 +54,29 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
         }
     }
     
-    /// This can be invoked twice (once for compact view, and once for primary)
-    func handleRootViewChange() {
-        // This triggers SwiftUI initialization enough that we get the preference
-        
-        print("Not snapshotting 2")
-        self.view.drawHierarchy(in: CGRect.zero, afterScreenUpdates: true)
-//        self.view.snapshotView(afterScreenUpdates: true)
-    }
-    
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
         /* Needed for e.g. pushes (so that the transition animation
         contains the right title */
         self.reloadSwiftUIStateIfDirty(state: currentState)
     }
     
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+    }
+    
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+    }
+    
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+    }
+    
     open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
         /* Needed for appearances without an animation (i.e. initial
          display */
         self.reloadSwiftUIStateIfDirty(state: currentState)
