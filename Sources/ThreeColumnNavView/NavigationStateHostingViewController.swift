@@ -11,11 +11,7 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
     var existingBinding: Binding<NavigationState?>! = nil
     
     var isDirty = true
-    @Published var currentState: NavigationState? = nil {
-        didSet {
-            self.wrappedRootView = self.wrappedRootView
-        }
-    }
+    @Published var currentState: NavigationState? = nil 
     
     convenience init(rootView: T, coordinator: CoordinatorProtocol) {
         let dummy = NavStateWrapperView(wrapped: rootView, navState: .constant(nil))
@@ -27,6 +23,7 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
                 self.currentState = $0
                 
                 self.isDirty = true
+                self.reloadSwiftUIStateIfDirty(state: $0)
             }
         )
         
@@ -48,9 +45,6 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
         }
         set {
             self.rootView = NavStateWrapperView(wrapped: newValue, navState: existingBinding!)
-            
-            isDirty = true
-            self.reloadSwiftUIStateIfDirty(state: existingBinding!.wrappedValue)
         }
     }
     
