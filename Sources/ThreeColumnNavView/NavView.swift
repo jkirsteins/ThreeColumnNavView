@@ -183,7 +183,11 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                  we start the transition.
                  
                  Otherwise the title/navbar controls will flicker on after
-                 the push animation is completed.*/
+                 the push animation is completed.
+                 
+                 NOTE: this causes duplicate onAppear sometimes (always 
+                 in compact view).
+                 */
                 targetVc.view.snapshotView(afterScreenUpdates: true)
                 
                 nc.pushViewController(targetVc, animated: true)
