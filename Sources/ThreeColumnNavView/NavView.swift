@@ -118,7 +118,7 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
         weak var splitViewController: UISplitViewController?
         
         func pop() {
-            _ = navLayers.popLast()
+            // TODO: maintain navigation layer state
         }
         
         var navLayers: [NavLayer] = []
@@ -151,14 +151,11 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                  reset to either 0,1 or 2 items */
                 switch(column) {
                 case .supplementary:
-                    self.navLayers = [
-                        sender
-                        ]
+                    // TODO: maintain navigation layer state
+                    break
                 case .secondary:
-                    self.navLayers = [
-                        self.navLayers[0],
-                        sender
-                        ]
+                    // TODO: maintain navigation layer state
+                    break
                 default:
                     fatalError("Unexpected .set mode (\(column))")
                 }
@@ -173,7 +170,8 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                 }
                 svc.setViewController(targetVc, for: column)
             case .push(let column):
-                self.navLayers.append(sender)
+                // TODO: maintain navigation layer state
+                
                 let candidate = svc.viewController(for: column)
                 guard let nc = candidate as? NavigationVCImpl else {
                     fatalError("Invalid UIViewController for \(String(describing: column.rawValue)) (expected UINavigationController but got \(String(describing: candidate)))")
