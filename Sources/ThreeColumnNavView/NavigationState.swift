@@ -25,10 +25,14 @@ public struct NavigationState : Equatable {
 }
 
 struct NavigationStatePreferenceKey: PreferenceKey {
-    static var defaultValue: NavigationState?
+    static var defaultValue: NavigationState? = nil
     
     static func reduce(value: inout NavigationState?, nextValue: () -> NavigationState?) {
-        value = nextValue()
+        
+        /* Ignore the value if a 'nil' (default value?) is propogated up from deeper in the hierarchy */
+        if let nextVal = nextValue() {
+            value = nextVal
+        }
     }
 }
 
