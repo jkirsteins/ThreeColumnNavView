@@ -51,9 +51,9 @@ public enum NavigationItem : Equatable, Hashable
     }
     
     
-    case textButton(_ title: String, action: ()->())
+    case textButton(_ title: NavigationItemTitle, action: ()->())
     case editButton(_ mode: Binding<EditMode>, initial: Bool)
-    case addButton
+    case addButton(action: ()->())
     case navigationActionReplacingBackIfCompact(_ title: NavigationItemTitle, mode: Binding<EditMode>, action: ()->())
     case circleMenu(_ title: String, items: [UIAction])
     
@@ -76,7 +76,7 @@ public enum NavigationItem : Equatable, Hashable
     
     var barButtonItem: UIBarButtonItem {
         switch(self) {
-        case .navigationActionReplacingBackIfCompact(let title, _, let action):
+        case .navigationActionReplacingBackIfCompact(let title, _, let action), .textButton(let title, let action):
             
             switch(title) {
             case .string(let titleString):
@@ -94,11 +94,6 @@ public enum NavigationItem : Equatable, Hashable
             let image = UIImage(systemName: "ellipsis.circle", withConfiguration: config)
             let menu = UIMenu(title: title, children: items)
             return UIBarButtonItem(image: image, menu: menu)
-        case .textButton(let title, let action):
-            let uiaction = UIAction(title: title) { _ in
-                action()
-            }
-            return UIBarButtonItem(title: title, primaryAction: uiaction)
         case .editButton(let editMode, let isEditing):
             switch(isEditing) {
             case false:
@@ -114,8 +109,9 @@ public enum NavigationItem : Equatable, Hashable
 
                 return UIBarButtonItem(systemItem: .done, primaryAction: action)
             }
-        case .addButton:
-            return UIBarButtonItem(systemItem: .add)
+        case .addButton(let action):
+            let uiaction = UIAction(title: "") { _ in action() }
+            return UIBarButtonItem(systemItem: .add, primaryAction: uiaction)
         }
     }
 }
