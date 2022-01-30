@@ -3,10 +3,36 @@ import Combine
 
 struct NavLinkStateModifier : ViewModifier {
     let state: NavLinkState
+    
+    let horizontalSizeClass: UIUserInterfaceSizeClass
+    let verticalSizeClass: UIUserInterfaceSizeClass
+    
     weak var vc: UIViewController?
     
-    init(_ state: NavLinkState) {
+    init(
+        _ state: NavLinkState,
+        horizontalSizeClass: UIUserInterfaceSizeClass,
+        verticalSizeClass: UIUserInterfaceSizeClass)
+    {
         self.state = state
+        self.horizontalSizeClass = horizontalSizeClass
+        self.verticalSizeClass = verticalSizeClass
+    }
+    
+    var swiftUiHorizontalSizeClass: UserInterfaceSizeClass? {
+        switch(self.horizontalSizeClass) {
+        case .regular: return .regular
+        case .compact: return .compact
+        default: return nil
+        }
+    }
+    
+    var swiftUiVerticalSizeClass: UserInterfaceSizeClass? {
+        switch(self.verticalSizeClass) {
+        case .regular: return .regular
+        case .compact: return .compact
+        default: return nil
+        }
     }
     
     func body(content: Content) -> some View
@@ -17,6 +43,8 @@ struct NavLinkStateModifier : ViewModifier {
                 instate.mode = self.state.mode
                 instate.provider = self.state.provider
             }
+            .environment(\.horizontalSizeClass, self.swiftUiHorizontalSizeClass)
+            .environment(\.verticalSizeClass, self.swiftUiVerticalSizeClass)
         if (self.state.isCompact) {
             // We need some hybrid of .sidebar (for collapsible headers) and .insetGrouped (for rest of appearance)
             return AnyView(res.listStyle(.insetGrouped))
@@ -132,7 +160,9 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                 return
             }
             
-            let targetView = sender.destination.modifier(NavLinkStateModifier(dst))
+            let targetView = sender.destination.modifier(NavLinkStateModifier(dst,
+                                                                              horizontalSizeClass: svc.traitCollection.horizontalSizeClass,
+                                                                             verticalSizeClass: svc.traitCollection.verticalSizeClass))
             let vc: DestinationContentType = NavigationStateHostingViewController(
                 rootView: targetView,
                 coordinator: self)
@@ -227,7 +257,9 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
         result.setViewController(suppl, for: .secondary)
         
         var primaryModifier = NavLinkStateModifier(
-            NavLinkState(provider: context.coordinator, mode: .set(.supplementary))
+            NavLinkState(provider: context.coordinator, mode: .set(.supplementary)),
+            horizontalSizeClass: result.traitCollection.horizontalSizeClass,
+            verticalSizeClass: result.traitCollection.verticalSizeClass
         )
         let list = SidebarContentType(
             rootView: self.sidebar.modifier(primaryModifier),
@@ -237,10 +269,12 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
         let listNc = NavigationVCImpl(
             rootViewController: list)
         result.setViewController(listNc, for: .primary)
-                
+        
         let compactList = SidebarContentType(
             rootView: self.sidebar.modifier(NavLinkStateModifier(
-                NavLinkState(provider: context.coordinator, mode: .push(.compact)))),
+                NavLinkState(provider: context.coordinator, mode: .push(.compact)),
+                horizontalSizeClass: result.traitCollection.horizontalSizeClass,
+                verticalSizeClass: result.traitCollection.verticalSizeClass)),
             coordinator: context.coordinator)
         
         // If we don't wrap this in NC, then we will have nothing to "push" child VC with
@@ -256,16 +290,25 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UISplitViewController, context: Context) {
         // This is called on subsequent views
         
+        let horizontalClass = uiViewController.traitCollection.horizontalSizeClass
+        let verticalCass = uiViewController.traitCollection.verticalSizeClass
+        
         // reset sidebar
         if let sidebarHost = uiViewController.viewController(for: .primary) as? SidebarContentType {
             // no NC wrapper
             sidebarHost.wrappedRootView = self.sidebar.modifier(
-                NavLinkStateModifier(NavLinkState(provider: context.coordinator, mode: .set(.supplementary))))
+                NavLinkStateModifier(
+                    NavLinkState(provider: context.coordinator, mode: .set(.supplementary)),
+                    horizontalSizeClass: horizontalClass,
+                    verticalSizeClass: verticalCass))
         } else if let sidebarNc = uiViewController.viewController(for: .primary) as? NavigationVCImpl,
                   let sidebarHost = sidebarNc.viewControllers.first as? SidebarContentType {
             
             sidebarHost.wrappedRootView = self.sidebar.modifier(
-                NavLinkStateModifier(NavLinkState(provider: context.coordinator, mode: .set(.supplementary))))
+                NavLinkStateModifier(
+                    NavLinkState(provider: context.coordinator, mode: .set(.supplementary)),
+                    horizontalSizeClass: horizontalClass,
+                    verticalSizeClass: verticalCass))
         } else {
             fatalError("Can't update")
         }
@@ -283,7 +326,9 @@ struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
                     }
                     
                     compactVc.wrappedRootView = self.sidebar.modifier(
-                        NavLinkStateModifier(NavLinkState(provider: context.coordinator, mode: .push(.compact))))
+                        NavLinkStateModifier(NavLinkState(provider: context.coordinator, mode: .push(.compact)),
+                                             horizontalSizeClass: horizontalClass,
+                                             verticalSizeClass: verticalCass))
                                         
                 }
             }
