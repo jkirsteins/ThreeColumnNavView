@@ -68,11 +68,19 @@ extension Color {
 
 /// The root navigation view. Analogous to the SwiftUI `NavigationView` control,
 /// except this will always have three columns.
-public struct NavView<Content: View> : View {
-    let root: NavView_Internal<Content>
+public struct NavView<Content: View, Placeholder: View> : View {
+    let root: NavView_Internal<Content, Placeholder>
     
-    public init(@ViewBuilder sidebar: () -> Content) {
-        self.root = NavView_Internal(sidebar: sidebar())
+    public init(sidebar: Content, placeholder: Placeholder) {
+        self.root = NavView_Internal(sidebar: sidebar, placeholder: placeholder)
+    }
+    
+    public init(@ViewBuilder sidebar: () -> Content, @ViewBuilder placeholder: ()->Placeholder) {
+        self.init(sidebar: sidebar(), placeholder: placeholder())
+    }
+    
+    public init(_ placeholder: Placeholder, @ViewBuilder sidebar: () -> Content) {
+        self.init(sidebar: sidebar(), placeholder: placeholder)
     }
     
     public var body: some View {
@@ -119,14 +127,16 @@ extension EnvironmentValues {
     }
 }
 
-struct NavView_Internal<Content: View>: UIViewControllerRepresentable {
+struct NavView_Internal<Content: View, Placeholder: View>: UIViewControllerRepresentable {
     
     typealias NavigationVCImpl = InternalUINavigationController
     
     let sidebar: Content
+    let placeholder: Placeholder
     
-    init(sidebar: Content) {
+    init(sidebar: Content, placeholder: Placeholder) {
         self.sidebar = sidebar
+        self.placeholder = placeholder
     }
     
     class Coordinator : NSObject, CoordinatorProtocol {
