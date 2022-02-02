@@ -166,7 +166,7 @@ struct NavView_Internal<Content: View, Placeholder: View>: UIViewControllerRepre
             from state: NavLinkState,
             to dst: NavLinkState)
         {
-            guard let svc = splitViewController else {
+            guard let svc = splitViewController as? NavUISplitViewController<Content, Placeholder> else {
                 return
             }
             
@@ -192,9 +192,11 @@ struct NavView_Internal<Content: View, Placeholder: View>: UIViewControllerRepre
                 switch(column) {
                 case .supplementary:
                     // TODO: maintain navigation layer state
+                    svc.placeholderState = .overSecondary
                     break
                 case .secondary:
                     // TODO: maintain navigation layer state
+                    svc.placeholderState = .hidden
                     break
                 default:
                     fatalError("Unexpected .set mode (\(column))")
@@ -258,7 +260,10 @@ struct NavView_Internal<Content: View, Placeholder: View>: UIViewControllerRepre
     typealias DestinationContentType = NavigationStateHostingViewController<ModifiedContent<NavLinkDestination, NavLinkStateModifier>>
     
     func makeUIViewController(context: Context) -> UISplitViewController {
-        let result = NavUISplitViewController(style: .tripleColumn, view: self)
+        let result = NavUISplitViewController(
+            style: .tripleColumn,
+            view: self,
+            placeholder: self.placeholder)
         
         let middle = UIHostingController(rootView: EmptyView())
         result.setViewController(middle, for: .supplementary)
