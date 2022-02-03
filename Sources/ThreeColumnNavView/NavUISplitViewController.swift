@@ -15,25 +15,6 @@ public enum PlaceholderState {
     case hidden
     case overSupplementaryAndSecondary
     case overSecondary
-    
-    fileprivate func getFrame(parent: CGRect, primary: CGFloat, supplementary: CGFloat) -> CGRect {
-        switch(self) {
-        case .hidden:
-            return CGRect.zero
-        case .overSupplementaryAndSecondary:
-            return CGRect(
-                x: primary + 1,
-                y: 0,
-                width: parent.size.width - primary - 2,
-                height: parent.size.height)
-        case .overSecondary:
-            return CGRect(
-                x: primary + supplementary + 2,
-                y: 0,
-                width: parent.size.width - primary - supplementary - 4,
-                height: parent.size.height)
-        }
-    }
 }
 
 struct PlaceholderModifier: ViewModifier {
@@ -95,21 +76,42 @@ class NavUISplitViewController<Content: View, Placeholder: View> : UISplitViewCo
             
         self.placeholderVc?.view.removeFromSuperview()
         
-        
         if !needsToHidePlaceholder,
             let placeholder = self.placeholder,
             let hvc = self.placeholderVc as? UIHostingController<ModifiedContent<Placeholder, PlaceholderModifier>> {
-            
-            let newRect = placeholderState.getFrame(
-                parent: self.view.frame,
-                primary: self.primaryColumnWidth,
-                supplementary: self.supplementaryColumnWidth)
-            
+
             hvc.rootView = placeholder.modifier(PlaceholderModifier(placeholderState))
             
-            self.view.addSubview(hvc.view)
-            hvc.view.frame = newRect
+            switch(self.placeholderState) {
+            case .overSupplementaryAndSecondary:
+                guard let suppVc = self.viewController(for: .supplementary),
+                      suppVc.view.bounds.size != CGSize.zero else {
+                    return
+                }
+                let suppOrigin = suppVc.view.convert(CGPoint.zero, to: self.view)
+                self.view.addSubview(hvc.view)
+                hvc.view.frame = CGRect(
+                    x: suppOrigin.x,
+                    y: 0,
+                    width: self.view.frame.size.width - suppOrigin.x,
+                    height: self.view.frame.size.height)
+            case .overSecondary:
+                guard let secVc = self.viewController(for: .secondary) else {
+                    return
+                }
+                secVc.view.addSubview(hvc.view)
+                hvc.view.frame = secVc.view.bounds
+            case .hidden:
+                break
+            }
         }
+    }
+    
+    /// For initial display, no other hookpoint appears to be able to set the placeholder.
+    /// The column viewcontrollers have empty bounds before this.
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.refreshPlaceholder()
     }
     
     override func viewDidLoad() {
