@@ -89,7 +89,17 @@ class NavigationStateHostingViewController<T: View> : UIHostingController<NavSta
             return
         }
         
-        self.navigationItem.title = state.title
+        switch (state.title) {
+        case .inline(let title):
+            self.navigationItem.title = title
+            self.navigationItem.largeTitleDisplayMode = .never
+        case .large(let title):
+            self.navigationItem.title = title
+            self.navigationItem.largeTitleDisplayMode = .always
+        default:
+            self.navigationItem.title = nil
+        }
+        
         
         var left: [UIBarButtonItem] = []
         var right: [UIBarButtonItem] = []

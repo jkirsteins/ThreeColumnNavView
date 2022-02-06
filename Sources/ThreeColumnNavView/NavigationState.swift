@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct NavigationState : Equatable {
-    internal init(title: String? = nil, items: [NavigationItem]? = nil) {
+    internal init(title: NavigationTitle? = nil, items: [NavigationItem]? = nil) {
         self.title = title
         self.items = items
     }
@@ -20,7 +20,7 @@ public struct NavigationState : Equatable {
         return false
     }
       
-    var title: String?
+    var title: NavigationTitle?
     var items: [NavigationItem]?
 }
 
@@ -38,7 +38,7 @@ struct NavigationStatePreferenceKey: PreferenceKey {
 
 /// Allows initializing navigation state by passing in multiple instances of `NavigationItem`.
 @resultBuilder public struct NavigationStateBuilder {
-    public static func buildBlock(_ title: String, _ items: NavigationItem...) -> NavigationState {
+    public static func buildBlock(_ title: NavigationTitle, _ items: NavigationItem...) -> NavigationState {
         return NavigationState(title: title, items: items)
     }
     
@@ -49,6 +49,12 @@ struct NavigationStatePreferenceKey: PreferenceKey {
     public static func buildExpression(_ expression: NavigationItem) -> NavigationItem {
         return expression
     }
+}
+
+public enum NavigationTitle : Equatable
+{
+    case inline(_ title: String)
+    case large(_ title: String)
 }
 
 extension View {
@@ -62,7 +68,7 @@ extension View {
     }
     
     /// Initialize navigation bar title and the navigation bar controls.
-    public func navigationState(title: String, @NavigationStateBuilder _ buildState: @escaping ()->NavigationState) -> some View {
+    public func navigationState(title: NavigationTitle, @NavigationStateBuilder _ buildState: @escaping ()->NavigationState) -> some View {
         var state = buildState()
         state.title = title
         return self
@@ -70,7 +76,7 @@ extension View {
     }
     
     /// Initialize a navigation bar with a title but no controls.
-    public func navigationState(title: String) -> some View {
+    public func navigationState(title: NavigationTitle) -> some View {
         let state = NavigationState(title: title, items: nil)
         return self
             .preference(key: NavigationStatePreferenceKey.self, value: state)
